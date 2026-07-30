@@ -1,0 +1,318 @@
+erDiagram
+    USERS ||--o| AGENT_PROFILES : has
+    USERS ||--o{ AGENT_VERIFICATION_DOCUMENTS : submits
+    USERS ||--o{ LISTINGS : owns
+    USERS ||--o{ LISTING_LEADS : generates
+    USERS ||--o{ ENROLLMENTS : enrolls
+    USERS ||--o{ CERTIFICATES : earns
+    USERS ||--o{ EVENT_REGISTRATIONS : registers
+    USERS ||--o{ DBR_SIMULATIONS : creates
+    USERS ||--o{ NOTIFICATIONS : receives
+    USERS ||--o{ AGENT_PROJECT_CLAIMS : claims
+    USERS }o--|| ROLES : assigned
+
+    USERS {
+        uuid id PK
+        string email
+        string phone
+        uuid role_id FK
+        enum status
+    }
+
+    ROLES ||--o{ ROLE_PERMISSIONS : grants
+    ROLES {
+        uuid id PK
+        string code
+        string name
+        bool is_system_role
+        bool is_protected
+    }
+
+    PERMISSIONS ||--o{ ROLE_PERMISSIONS : referenced_by
+    PERMISSIONS {
+        uuid id PK
+        string module_code
+        string action_code
+        enum scope_type
+    }
+
+    ROLE_PERMISSIONS {
+        uuid id PK
+        uuid role_id FK
+        uuid permission_id FK
+        enum granted_scope
+        string editable_by_role_code
+        uuid updated_by FK
+    }
+
+    AGENT_PROFILES {
+        uuid id PK
+        uuid user_id FK
+        string full_name
+        string whatsapp_number
+        string public_slug
+        int total_listings_sold
+    }
+
+    AGENT_VERIFICATION_DOCUMENTS {
+        uuid id PK
+        uuid user_id FK
+        enum doc_type
+        enum review_status
+    }
+
+    LISTINGS ||--o{ LISTING_PHOTOS : has
+    LISTINGS ||--o{ LISTING_VIDEOS : has
+    LISTINGS ||--o{ LISTING_AMENITIES : has
+    LISTINGS ||--o{ LISTING_PRICE_HISTORY : has
+    LISTINGS ||--o{ LISTING_LEADS : receives
+    LISTINGS ||--o{ LISTING_VIEWS : tracked_by
+    LISTINGS ||--o{ DBR_SIMULATIONS : referenced_by
+    LISTINGS }o--o| DEVELOPER_PROJECTS : linked_to
+    LISTINGS }o--|| REF_PROVINCES : located_in
+    LISTINGS }o--|| REF_CITIES : located_in
+    LISTINGS }o--|| REF_DISTRICTS : located_in
+
+    LISTINGS {
+        uuid id PK
+        uuid agent_id FK
+        uuid developer_project_id FK
+        uuid province_id FK
+        uuid city_id FK
+        uuid district_id FK
+        string area_keyword
+        enum category
+        enum transaction_type
+        string title
+        decimal price
+        enum status
+    }
+
+    REF_PROVINCES ||--o{ REF_CITIES : has
+    REF_PROVINCES {
+        uuid id PK
+        string code
+        string name
+    }
+
+    REF_CITIES ||--o{ REF_DISTRICTS : has
+    REF_CITIES {
+        uuid id PK
+        uuid province_id FK
+        string code
+        string name
+        enum type
+    }
+
+    REF_DISTRICTS ||--o{ REF_VILLAGES : has
+    REF_DISTRICTS {
+        uuid id PK
+        uuid city_id FK
+        string code
+        string name
+    }
+
+    REF_VILLAGES {
+        uuid id PK
+        uuid district_id FK
+        string code
+        string name
+        string postal_code
+    }
+
+    LISTING_PHOTOS {
+        uuid id PK
+        uuid listing_id FK
+        string url
+        bool is_cover
+    }
+
+    LISTING_VIDEOS {
+        uuid id PK
+        uuid listing_id FK
+        string url
+    }
+
+    AMENITIES ||--o{ LISTING_AMENITIES : used_in
+    AMENITIES {
+        uuid id PK
+        string name
+    }
+    LISTING_AMENITIES {
+        uuid listing_id FK
+        uuid amenity_id FK
+    }
+
+    LISTING_PRICE_HISTORY {
+        uuid id PK
+        uuid listing_id FK
+        decimal old_price
+        decimal new_price
+    }
+
+    LISTING_LEADS {
+        uuid id PK
+        uuid listing_id FK
+        uuid agent_id FK
+        enum source
+        timestamp created_at
+    }
+
+    LISTING_VIEWS {
+        uuid id PK
+        uuid listing_id FK
+        timestamp viewed_at
+    }
+
+    DEVELOPER_PARTNERS ||--o{ DEVELOPER_PROJECTS : owns
+    DEVELOPER_PARTNERS {
+        uuid id PK
+        string company_name
+        enum status
+    }
+
+    DEVELOPER_PROJECTS ||--o{ DEVELOPER_PROJECT_MEDIA : has
+    DEVELOPER_PROJECTS ||--o{ AGENT_PROJECT_CLAIMS : claimed_by
+    DEVELOPER_PROJECTS ||--o{ LISTINGS : source_for
+    DEVELOPER_PROJECTS ||--o{ EVENTS : related_to
+    DEVELOPER_PROJECTS {
+        uuid id PK
+        uuid developer_id FK
+        string name
+        decimal price_min
+        decimal price_max
+        enum status
+    }
+
+    DEVELOPER_PROJECT_MEDIA {
+        uuid id PK
+        uuid project_id FK
+        enum type
+        string url
+    }
+
+    AGENT_PROJECT_CLAIMS {
+        uuid id PK
+        uuid agent_id FK
+        uuid project_id FK
+        timestamp claimed_at
+    }
+
+    COURSES ||--o{ COURSE_LESSONS : contains
+    COURSES ||--o{ QUIZZES : has
+    COURSES ||--o{ ENROLLMENTS : enrolled_by
+    COURSES ||--o{ CERTIFICATES : issues
+    COURSES ||--o{ EVENTS : related_to
+    COURSES }o--o| COURSES : prerequisite
+
+    COURSES {
+        uuid id PK
+        string title
+        enum category
+        uuid prerequisite_course_id FK
+        int passing_grade
+        enum status
+    }
+
+    COURSE_LESSONS {
+        uuid id PK
+        uuid course_id FK
+        string title
+        enum content_type
+    }
+
+    QUIZZES ||--o{ QUIZ_QUESTIONS : contains
+    QUIZZES ||--o{ QUIZ_ATTEMPTS : attempted_via
+    QUIZZES {
+        uuid id PK
+        uuid course_id FK
+        string title
+    }
+
+    QUIZ_QUESTIONS ||--o{ QUIZ_OPTIONS : has
+    QUIZ_QUESTIONS {
+        uuid id PK
+        uuid quiz_id FK
+        string question_text
+    }
+
+    QUIZ_OPTIONS {
+        uuid id PK
+        uuid question_id FK
+        string option_text
+        bool is_correct
+    }
+
+    ENROLLMENTS ||--o{ QUIZ_ATTEMPTS : has
+    ENROLLMENTS {
+        uuid id PK
+        uuid agent_id FK
+        uuid course_id FK
+        enum status
+        int progress_percent
+    }
+
+    QUIZ_ATTEMPTS {
+        uuid id PK
+        uuid enrollment_id FK
+        uuid quiz_id FK
+        decimal score
+        bool passed
+    }
+
+    CERTIFICATES {
+        uuid id PK
+        uuid agent_id FK
+        uuid course_id FK
+        string certificate_url
+    }
+
+    EVENTS ||--o{ EVENT_REGISTRATIONS : has
+    EVENTS {
+        uuid id PK
+        string title
+        enum category
+        uuid related_course_id FK
+        uuid related_project_id FK
+        enum status
+        timestamp start_at
+    }
+
+    EVENT_REGISTRATIONS {
+        uuid id PK
+        uuid event_id FK
+        uuid agent_id FK
+        enum status
+    }
+
+    DBR_SIMULATIONS {
+        uuid id PK
+        uuid agent_id FK
+        uuid listing_id FK
+        decimal net_income
+        decimal property_price
+        decimal dbr_percent
+        enum eligibility_status
+    }
+
+    NOTIFICATIONS {
+        uuid id PK
+        uuid user_id FK
+        enum type
+        bool is_read
+    }
+
+    SYSTEM_CONFIGS {
+        uuid id PK
+        string config_key
+        string config_value
+    }
+
+    AUDIT_LOGS {
+        uuid id PK
+        uuid user_id FK
+        string action
+        string entity_type
+    }
+
+    USERS ||--o{ AUDIT_LOGS : performs
